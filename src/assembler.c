@@ -1,6 +1,7 @@
 #include "assembler.h"
 
 #include <ctype.h>
+#include <string.h>
 
 void next_token(const char *src, int *pos, Token *out)
 {
@@ -52,5 +53,49 @@ void next_token(const char *src, int *pos, Token *out)
         out->type = TOKEN_WORD;
 
         return;
+    }
+}
+
+void assemble(const char *src, VM *vm)
+{
+    Token out = {0};
+    int pos = 0;
+
+    while (1)
+    {
+        next_token(src, &pos, &out);
+
+        switch (out.type)
+        {
+        case TOKEN_WORD:
+            const char *instr = out.as.text;
+
+            if (strcmp(instr, "HALT") == 0)
+                vm->memory[vm->PC++] = OP_HALT;
+            else if (strcmp(instr, "PUSH") == 0)
+            {
+                vm->memory[vm->PC++] = OP_PUSH;
+
+                Token operand;
+                next_token(src, &pos, &operand);
+                vm->memory[vm->PC++] = (uint8_t)operand.as.value;
+            }
+            else if (strcmp(instr, "POP") == 0)
+                vm->memory[vm->PC++] = OP_POP;
+            else if (strcmp(instr, "ADD") == 0)
+                vm->memory[vm->PC++] = OP_ADD;
+            else if (strcmp(instr, "SUB") == 0)
+                vm->memory[vm->PC++] = OP_SUB;
+            else
+                break;
+
+            break;
+
+        case TOKEN_EOF:
+            return;
+
+        default:
+            break;
+        }
     }
 }
