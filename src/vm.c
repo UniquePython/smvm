@@ -15,8 +15,40 @@ void vm_run(VM *vm)
 {
     while (1)
     {
-        uint8_t val = vm->memory[vm->PC];
-        printf("%" PRIu8 "\n", val);
-        break;
+        OpCode opcode = (OpCode)vm->memory[vm->PC++];
+
+        uint8_t value, a, b;
+
+        switch (opcode)
+        {
+        case OP_HALT:
+            return;
+
+        case OP_PUSH:
+            value = vm->memory[vm->PC++];
+            vm->memory[--vm->SP] = value;
+            break;
+
+        case OP_POP:
+            value = vm->memory[vm->SP++];
+            printf("%" PRIu8 "\n", value);
+            break;
+
+        case OP_ADD:
+            a = vm->memory[vm->SP++];
+            b = vm->memory[vm->SP++];
+            vm->memory[--vm->SP] = a + b;
+            break;
+
+        case OP_SUB:
+            a = vm->memory[vm->SP++];
+            b = vm->memory[vm->SP++];
+            vm->memory[--vm->SP] = b - a;
+            break;
+
+        default:
+            fprintf(stderr, "Unknown opcode\n");
+            return;
+        }
     }
 }
